@@ -51,7 +51,7 @@
 
 RCT_NOT_IMPLEMENTED(- (instancetype)initWithCoder:(NSCoder *)aDecoder)
 
-- (instancetype)initWithProcessPool:(WKProcessPool *)processPool
+- (instancetype)initWithConfig:(WKWebViewConfiguration *)config
 {
   if(self = [self initWithFrame:CGRectZero])
   {
@@ -60,8 +60,6 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithCoder:(NSCoder *)aDecoder)
     _automaticallyAdjustContentInsets = YES;
     _contentInset = UIEdgeInsetsZero;
 
-    WKWebViewConfiguration* config = [[WKWebViewConfiguration alloc] init];
-    config.processPool = processPool;
     WKUserContentController* userController = [[WKUserContentController alloc]init];
     [userController addScriptMessageHandler:[[WeakScriptMessageDelegate alloc] initWithDelegate:self] name:@"reactNative"];
     config.userContentController = userController;
