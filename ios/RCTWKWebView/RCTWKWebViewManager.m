@@ -26,28 +26,49 @@ RCT_ENUM_CONVERTER(UIScrollViewContentInsetAdjustmentBehavior, (@{
 
 @end
 
+@implementation RCTConvert (WKWebViewConfiguration)
+
++ (WKWebViewConfiguration *)WKWebViewConfiguration:(id)json
+{
+  NSDictionary<NSString *, id> *options = [RCTConvert NSDictionary:json];
+  WKWebViewConfiguration *config = [[WKWebViewConfiguration alloc] init];
+  config.allowsInlineMediaPlayback = [RCTConvert BOOL:options[@"allowsInlineMediaPlayback"]];
+  config.mediaPlaybackRequiresUserAction = [RCTConvert BOOL:options[@"mediaPlaybackRequiresUserAction"]];;
+  return config;
+}
+
+@end
+
 @implementation RCTWKWebViewManager
 {
   NSConditionLock *_shouldStartLoadLock;
-  WKProcessPool *_processPool;
+  //WKProcessPool *_processPool;
   BOOL _shouldStartLoad;
+  WKWebViewConfiguration *_config;
 }
 
 RCT_EXPORT_MODULE()
 
-- (id)init {
+/*- (id)init {
   if (self = [super init]) {
     _processPool = [[WKProcessPool alloc] init];
   }
-    
+
   return self;
-}
+}*/
 
 - (UIView *)view
 {
-  RCTWKWebView *webView = [[RCTWKWebView alloc] initWithProcessPool:_processPool];
+  WKWebViewConfiguration *config = !!_config ? [_config copy] : [[WKWebViewConfiguration alloc] init];
+  config.processPool = [[WKProcessPool alloc] init];
+  RCTWKWebView *webView = [[RCTWKWebView alloc] initWithConfig:config];
   webView.delegate = self;
   return webView;
+}
+
+RCT_EXPORT_METHOD(setConfiguration:(WKWebViewConfiguration *)config)
+{
+  _config = config;
 }
 
 RCT_EXPORT_VIEW_PROPERTY(source, NSDictionary)
@@ -68,11 +89,7 @@ RCT_EXPORT_VIEW_PROPERTY(onProgress, RCTDirectEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onMessage, RCTDirectEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onScroll, RCTDirectEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(hideKeyboardAccessoryView, BOOL)
-RCT_EXPORT_VIEW_PROPERTY(messagingEnabled, BOOL)
-RCT_EXPORT_VIEW_PROPERTY(allowsLinkPreview, BOOL)
-#if defined(__IPHONE_OS_VERSION_MAX_ALLOWED) && __IPHONE_OS_VERSION_MAX_ALLOWED >= 110000 /* __IPHONE_11_0 */
-RCT_EXPORT_VIEW_PROPERTY(contentInsetAdjustmentBehavior, UIScrollViewContentInsetAdjustmentBehavior)
-#endif
+RCT_REMAP_VIEW_PROPERTY(allowsLinkPreview, _webView.allowsLinkPreview, BOOL)
 
 RCT_EXPORT_METHOD(goBack:(nonnull NSNumber *)reactTag)
 {
